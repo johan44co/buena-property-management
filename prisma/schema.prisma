@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enum Types
+enum UserRole {
+  admin
+  tenant
+}
+
+enum PropertyType {
+  residential
+  commercial
+}
+
+enum RentStatus {
+  paid
+  overdue
+  pending
+}
+
+enum MaintenanceStatus {
+  open
+  in_progress
+  resolved
+}
+
+enum DocumentType {
+  lease_agreement
+  payment_receipt
+  other
+}
+
+enum NotificationType {
+  payment_due
+  maintenance_update
+  general
+}
+
+// Models
+model User {
+  id             String   @id @default(uuid())
+  email          String
+  role           UserRole
+  profilePicture String?
+  createdAt      DateTime @default(now())
+
+  properties          Property[]           @relation("PropertyOwner")
+  rentPayments        RentPayment[]
+  maintenanceRequests MaintenanceRequest[]
+  documents           Document[]
+  notifications       Notification[]
+  // auditLogs           AuditLog[]
+  Unit                Unit[]
+}
+
+model Property {
+  id        String       @id @default(uuid())
+  name      String
+  address   String
+  type      PropertyType
+  ownerId   String
+  createdAt DateTime     @default(now())
+  status    String
+
+  owner User   @relation("PropertyOwner", fields: [ownerId], references: [id])
+  units Unit[]
+}
+
+model Unit {
+  id         String    @id @default(uuid())
+  propertyId String
+  unitNumber String
+  tenantId   String?
+  rentAmount Float
+  isOccupied Boolean   @default(false)
+  leaseStart DateTime?
+  leaseEnd   DateTime?
+  createdAt  DateTime  @default(now())
+
+  property            Property             @relation(fields: [propertyId], references: [id])
+  tenant              User?                @relation(fields: [tenantId], references: [id])
+  rentPayments        RentPayment[]
+  maintenanceRequests MaintenanceRequest[]
+  documents           Document[]
+}
+
+model RentPayment {
+  id          String     @id @default(uuid())
+  unitId      String
+  tenantId    String
+  paymentDate DateTime   @default(now())
+  amountPaid  Float
+  status      RentStatus
+  dueDate     DateTime?
+
+  unit   Unit @relation(fields: [unitId], references: [id])
+  tenant User @relation(fields: [tenantId], references: [id])
+}
+
+model MaintenanceRequest {
+  id          String            @id @default(uuid())
+  unitId      String
+  tenantId    String
+  description String
+  status      MaintenanceStatus
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime?
+
+  unit   Unit @relation(fields: [unitId], references: [id])
+  tenant User @relation(fields: [tenantId], references: [id])
+}
+
+model Document {
+  id         String       @id @default(uuid())
+  unitId     String
+  type       DocumentType
+  uploadedBy String
+  fileUrl    String
+  createdAt  DateTime     @default(now())
+
+  unit           Unit @relation(fields: [unitId], references: [id])
+  uploadedByUser User @relation(fields: [uploadedBy], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// model AuditLog {
+//   id        String   @id @default(uuid())
+//   action    String
+//   userId    String
+//   timestamp DateTime @default(now())
+//   metadata  Json?
+
+//   user User @relation(fields: [userId], references: [id])
+// }
