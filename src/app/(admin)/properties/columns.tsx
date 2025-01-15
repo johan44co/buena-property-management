@@ -15,12 +15,9 @@ import {
 import { useRouter } from "next/navigation";
 import { Property } from "@prisma/client";
 
-export type PropertyColumDef = Pick<
-  Property,
-  "id" | "type" | "name" | "status"
->;
+export type PropertyData = Pick<Property, "id" | "type" | "name" | "status">;
 
-export const columns: ColumnDef<PropertyColumDef>[] = [
+export const columns: ColumnDef<PropertyData>[] = [
   {
     id: "actions",
     cell: function Action({ row }) {
