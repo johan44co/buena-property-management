@@ -8,6 +8,10 @@ async function getProperties({
 }: {
   userId?: string;
 }): Promise<Property[]> {
+  if (!userId) {
+    return [];
+  }
+
   const properties = await prisma.property.findMany({
     where: {
       ownerId: userId,
@@ -28,9 +32,5 @@ export default async function Page() {
     userId: session?.user.id,
   });
 
-  return (
-    <div className="container mx-auto">
-      <DataTable columns={columns} data={data} />
-    </div>
-  );
+  return <DataTable columns={columns} data={data} />;
 }
