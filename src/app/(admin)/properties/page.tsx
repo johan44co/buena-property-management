@@ -22,6 +22,7 @@ async function getProperties({
     id: property.id,
     type: property.type,
     name: property.name,
+    status: property.status,
   }));
 }
 

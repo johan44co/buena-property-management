@@ -60,7 +60,7 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
-  role          UserRole  @default(tenant)
+  role          UserRole  @default(admin)
 
   accounts Account[]
   sessions Session[]
