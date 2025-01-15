@@ -1,6 +1,6 @@
 "use client";
 
-import PropertyForm from "@/app/(admin)/properties/form";
+import PropertyForm from "@/app/(admin)/properties/property-form";
 import { updateProperty } from "@/util/property";
 import { Property } from "@prisma/client";
 import { useRouter } from "next/navigation";

@@ -1,5 +1,5 @@
 "use client";
-import PropertyForm from "@/app/(admin)/properties/form";
+import PropertyForm from "@/app/(admin)/properties/property-form";
 import { createProperty } from "@/util/property";
 import { useRouter } from "next/navigation";
 

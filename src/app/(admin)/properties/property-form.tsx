@@ -28,8 +28,6 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-// import { createProperty } from "@/util/property";
-// import { useRouter } from "next/navigation";
 
 const propertyFormSchema = z.object({
   name: z.string().min(2, "Property name is required"),
@@ -38,7 +36,7 @@ const propertyFormSchema = z.object({
   status: z.enum(["active", "inactive"]),
 });
 
-export type PropertyFormValues = z.infer<typeof propertyFormSchema>;
+type PropertyFormValues = z.infer<typeof propertyFormSchema>;
 
 export default function PropertyForm({
   property,

@@ -1,10 +1,12 @@
 "use server";
 
-import { PropertyFormValues } from "@/app/(admin)/properties/form";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Property } from "@prisma/client";
 
-export const createProperty = async (data: PropertyFormValues) => {
+type PropertyData = Pick<Property, "name" | "address" | "type" | "status">;
+
+export const createProperty = async (data: PropertyData) => {
   try {
     const session = await getSession();
 
@@ -48,7 +50,7 @@ export const getProperty = async (id: string) => {
   }
 };
 
-export const updateProperty = async (id: string, data: PropertyFormValues) => {
+export const updateProperty = async (id: string, data: PropertyData) => {
   try {
     const session = await getSession();
 
