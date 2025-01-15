@@ -33,5 +33,9 @@ export default async function Page() {
     userId: session?.user.id,
   });
 
-  return <DataTable columns={columns} data={data} />;
+  return (
+    <div className="container mx-auto p-4 pt-0">
+      <DataTable columns={columns} data={data} />
+    </div>
+  );
 }
