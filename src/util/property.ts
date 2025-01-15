@@ -24,6 +24,7 @@ export const createProperty = async (data: PropertyFormValues) => {
 
     return { property };
   } catch (error) {
+    console.error(error);
     return { error: "An error occurred while creating the property" };
   }
 };
