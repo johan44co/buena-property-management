@@ -31,6 +31,9 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  title: string;
+  description: string;
+  inputFilterPlaceholder: string;
 }
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +44,9 @@ import React from "react";
 export function DataTable<TData, TValue>({
   columns,
   data,
+  title,
+  description,
+  inputFilterPlaceholder,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -61,13 +67,13 @@ export function DataTable<TData, TValue>({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Properties</CardTitle>
-        <CardDescription>Manage your properties.</CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex items-center pb-4">
           <Input
-            placeholder="Filter properties..."
+            placeholder={inputFilterPlaceholder}
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn("name")?.setFilterValue(event.target.value)

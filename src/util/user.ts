@@ -29,3 +29,45 @@ export const createUser = async (data: UserData) => {
     return { error: "An error occurred while creating the user" };
   }
 };
+
+export const getUser = async (id: string) => {
+  try {
+    const session = await getSession();
+
+    if (!session || !session.user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    return { user };
+  } catch (error) {
+    console.error(error);
+    return { error: "An error occurred while fetching the user" };
+  }
+};
+
+export const updateUser = async (id: string, data: UserData) => {
+  try {
+    const session = await getSession();
+
+    if (!session || !session.user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: {
+        name: data.name,
+        email: data.email,
+      },
+    });
+
+    return { user };
+  } catch (error) {
+    console.error(error);
+    return { error: "An error occurred while updating the user" };
+  }
+};

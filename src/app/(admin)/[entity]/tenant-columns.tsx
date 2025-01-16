@@ -13,15 +13,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
-import { Property } from "@prisma/client";
+import { User } from "@prisma/client";
 
-export type PropertyData = Pick<Property, "id" | "type" | "name" | "status">;
+export type TenantDataColumns = Pick<User, "id" | "name" | "email">;
 
-export const columns: ColumnDef<PropertyData>[] = [
+export const tenantColumns: ColumnDef<TenantDataColumns>[] = [
   {
     id: "actions",
     cell: function Action({ row }) {
-      const property = row.original;
+      const tenant = row.original;
       const router = useRouter();
 
       return (
@@ -35,13 +35,13 @@ export const columns: ColumnDef<PropertyData>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => router.push(`/properties/${property.id}/edit`)}
+              onClick={() => router.push(`/tenants/${tenant.id}/edit`)}
             >
               Edit
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => router.push(`/properties/${property.id}`)}
+              onClick={() => router.push(`/tenants/${tenant.id}`)}
             >
               Overview
             </DropdownMenuItem>
@@ -55,11 +55,7 @@ export const columns: ColumnDef<PropertyData>[] = [
     header: "Name",
   },
   {
-    accessorKey: "type",
-    header: "Type",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "email",
+    header: "Email",
   },
 ];
