@@ -41,7 +41,7 @@ import { Input } from "@/components/ui/input";
 
 import React from "react";
 
-export function DataTable<TData, TValue>({
+export function EntityTable<TData, TValue>({
   columns,
   data,
   title,

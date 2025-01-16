@@ -74,3 +74,24 @@ export const updateProperty = async (id: string, data: PropertyData) => {
     return { error: "An error occurred while updating the property" };
   }
 };
+
+export const getProperties = async () => {
+  try {
+    const session = await getSession();
+
+    if (!session || !session.user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    const properties = await prisma.property.findMany({
+      where: {
+        ownerId: session.user.id,
+      },
+    });
+
+    return { properties };
+  } catch (error) {
+    console.error(error);
+    return { error: "An error occurred while fetching the properties" };
+  }
+};

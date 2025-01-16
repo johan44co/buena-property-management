@@ -1,15 +1,15 @@
 "use client";
-import PropertyForm from "@/app/(admin)/[entity]/property-form";
-import TenantForm from "@/app/(admin)/[entity]/tenant-form";
+import PropertyForm from "@/app/(admin)/[entity]/_forms/property";
+import TenantForm from "@/app/(admin)/[entity]/_forms/tenant";
 import { createProperty } from "@/util/property";
 import { createUser } from "@/util/user";
 import { useParams, useRouter } from "next/navigation";
 
 export default function Page() {
   const route = useRouter();
-  const params = useParams();
+  const { entity } = useParams();
   const Form = () => {
-    switch (params.entity) {
+    switch (entity) {
       case "properties":
         return (
           <PropertyForm
@@ -19,7 +19,7 @@ export default function Page() {
             onSubmitHandler={(property) => {
               createProperty(property).then((result) => {
                 if (result.property) {
-                  route.push(`/properties/${result.property.id}`);
+                  route.push(`/${entity}/${result.property.id}`);
                 }
               });
             }}
@@ -37,7 +37,7 @@ export default function Page() {
                 name: user.name || null,
               }).then((result) => {
                 if (result.user) {
-                  route.push(`/tenants/${result.user.id}`);
+                  route.push(`/${entity}/${result.user.id}`);
                 }
               });
             }}

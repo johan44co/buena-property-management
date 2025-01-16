@@ -71,3 +71,24 @@ export const updateUser = async (id: string, data: UserData) => {
     return { error: "An error occurred while updating the user" };
   }
 };
+
+export const getUsers = async () => {
+  try {
+    const session = await getSession();
+
+    if (!session || !session.user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        createdById: session.user.id,
+      },
+    });
+
+    return { users };
+  } catch (error) {
+    console.error(error);
+    return { error: "An error occurred while fetching the users" };
+  }
+};

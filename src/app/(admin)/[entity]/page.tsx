@@ -1,8 +1,8 @@
-import { DataTable } from "@/components/data-table";
-import { getSession } from "@/lib/auth";
-import { propertyColumns } from "./property-columns";
-import { tenantColumns } from "./tenant-columns";
-import { getProperties, getTenants } from "./data-columns";
+import { EntityTable } from "@/app/(admin)/[entity]/entity-table";
+import { propertyColumns } from "./_columns/property";
+import { tenantColumns } from "./_columns/tenant";
+import { getProperties } from "@/util/property";
+import { getUsers } from "@/util/user";
 
 export const dynamicParams = false;
 
@@ -24,30 +24,40 @@ export default async function Page({
     entity: "properties" | "tenants";
   }>;
 }) {
-  const session = await getSession();
   const entity = (await params).entity;
 
   const Table = (async () => {
     switch (entity) {
       case "properties":
+        const { properties } = await getProperties();
         return (
-          <DataTable
+          <EntityTable
             columns={propertyColumns}
-            data={await getProperties({
-              userId: session?.user.id,
-            })}
+            data={
+              properties?.map((property) => ({
+                id: property.id,
+                type: property.type,
+                name: property.name,
+                status: property.status,
+              })) || []
+            }
             title="Properties"
             description="Manage your properties."
             inputFilterPlaceholder="Filter properties..."
           />
         );
       case "tenants":
+        const { users } = await getUsers();
         return (
-          <DataTable
+          <EntityTable
             columns={tenantColumns}
-            data={await getTenants({
-              userId: session?.user.id,
-            })}
+            data={
+              users?.map((user) => ({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+              })) || []
+            }
             title="Tenants"
             description="Manage your tenants."
             inputFilterPlaceholder="Filter tenants..."
