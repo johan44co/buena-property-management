@@ -16,6 +16,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 
@@ -33,6 +34,7 @@ export function NavMain({
     }[];
   }[];
 }) {
+  const { state } = useSidebar();
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Management</SidebarGroupLabel>
@@ -47,10 +49,15 @@ export function NavMain({
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={item.title}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <Link
+                      suppressHydrationWarning
+                      href={state === "collapsed" ? item.url : ""}
+                    >
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    </Link>
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
