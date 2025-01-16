@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   Building,
   HandCoins,
+  House,
   LayoutDashboard,
   Users,
   Wrench,
@@ -53,6 +54,21 @@ const data = {
         {
           title: "Add Property",
           url: "/properties/add",
+        },
+      ],
+    },
+    {
+      title: "Units",
+      url: "/units",
+      icon: House,
+      items: [
+        {
+          title: "All Units",
+          url: "/units",
+        },
+        {
+          title: "Add Unit",
+          url: "/units/add",
         },
       ],
     },

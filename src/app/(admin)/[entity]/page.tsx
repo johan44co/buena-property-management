@@ -14,6 +14,9 @@ export function generateStaticParams() {
     {
       entity: "tenants",
     },
+    {
+      entity: "units",
+    },
   ];
 }
 

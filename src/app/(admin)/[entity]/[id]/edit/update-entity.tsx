@@ -33,7 +33,7 @@ export function UpdateEntity({ id, entity, data }: EntityProps) {
           onSubmitHandler={(property) => {
             updateProperty(id, property).then((result) => {
               if (result.property) {
-                router.push(`/${entity}/${id}`);
+                router.push(`/${entity}`);
               }
             });
           }}
@@ -46,8 +46,8 @@ export function UpdateEntity({ id, entity, data }: EntityProps) {
       };
       return (
         <TenantForm
-          title="Edit User"
-          description="Edit user details"
+          title="Edit Tenant"
+          description="Edit tenant details."
           submitText="Save"
           tenant={tenant}
           onSubmitHandler={(user) => {
@@ -56,7 +56,7 @@ export function UpdateEntity({ id, entity, data }: EntityProps) {
               name: user.name || null,
             }).then((result) => {
               if (result.user) {
-                router.push(`/${entity}/${id}`);
+                router.push(`/${entity}`);
               }
             });
           }}

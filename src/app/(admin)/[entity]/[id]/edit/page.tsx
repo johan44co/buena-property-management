@@ -15,7 +15,7 @@ export default async function Page({
     case "properties": {
       const { property } = await getProperty(id);
       if (!property) {
-        redirect(`/${entity}/${id}`);
+        redirect(`/${entity}`);
       }
       return (
         <div className="container mx-auto p-4 pt-0">
@@ -26,7 +26,7 @@ export default async function Page({
     case "tenants": {
       const { user } = await getUser(id);
       if (!user) {
-        redirect(`/${entity}/${id}`);
+        redirect(`/${entity}`);
       }
       return (
         <div className="container mx-auto p-4 pt-0">

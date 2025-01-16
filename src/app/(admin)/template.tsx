@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProperty } from "@/util/property";
+import { getUser } from "@/util/user";
 import { useParams, usePathname } from "next/navigation";
 import React from "react";
 
@@ -29,6 +30,14 @@ export default function Template({ children }: { children: React.ReactNode }) {
       parts.map(async (part, index) => {
         if (parts[index - 1] === "properties" && part === params.id) {
           const propertyName = (await getProperty(params.id)).property?.name;
+          return {
+            name: propertyName,
+            href: `/${parts.slice(0, index + 1).join("/")}`,
+          };
+        }
+        if (parts[index - 1] === "tenants" && part === params.id) {
+          const { user } = await getUser(params.id);
+          const propertyName = user?.name || user?.email;
           return {
             name: propertyName,
             href: `/${parts.slice(0, index + 1).join("/")}`,
