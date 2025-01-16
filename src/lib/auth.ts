@@ -1,14 +1,24 @@
-import { AuthOptions, DefaultSession, getServerSession } from "next-auth";
+import {
+  AuthOptions,
+  DefaultSession,
+  DefaultUser,
+  getServerSession,
+} from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import EmailProvider from "next-auth/providers/email";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { UserRole } from "@prisma/client";
 
 declare module "next-auth" {
   interface Session {
     user: {
       id?: string;
+      role?: UserRole;
     } & DefaultSession["user"];
+  }
+  interface User extends DefaultUser {
+    role?: UserRole;
   }
 }
 
@@ -28,6 +38,7 @@ const authOptions: AuthOptions = {
     async session({ session, user }) {
       if (user) {
         session.user.id = user.id;
+        session.user.role = user.role;
       }
       return session;
     },

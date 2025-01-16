@@ -16,7 +16,6 @@ import React from "react";
 export default function Template({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const params = useParams();
-  const parts = pathname.split("/").filter(Boolean);
 
   const [breadcrumb, setBreadcrumb] = React.useState<
     { name?: string; href: string }[]
@@ -24,6 +23,8 @@ export default function Template({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
+    const parts = pathname.split("/").filter(Boolean);
+
     Promise.all(
       parts.map(async (part, index) => {
         if (parts[index - 1] === "properties" && part === params.id) {
