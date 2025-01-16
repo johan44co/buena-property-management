@@ -33,7 +33,7 @@ export function UpdateEntity({ id, entity, data }: EntityProps) {
           onSubmitHandler={(property) => {
             updateProperty(id, property).then((result) => {
               if (result.property) {
-                router.push(`/${entity}`);
+                router.push(`/${entity}/${id}`);
               }
             });
           }}
@@ -56,7 +56,7 @@ export function UpdateEntity({ id, entity, data }: EntityProps) {
               name: user.name || null,
             }).then((result) => {
               if (result.user) {
-                router.push(`/${entity}`);
+                router.push(`/${entity}/${id}`);
               }
             });
           }}
