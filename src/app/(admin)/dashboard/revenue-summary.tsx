@@ -9,13 +9,24 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
-  { month: "January", total: 266 },
-  { month: "February", total: 505 },
-  { month: "March", total: 357 },
-  { month: "April", total: 263 },
-  { month: "May", total: 339 },
-  { month: "June", total: 354 },
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+
+const chartData: {
+  month: string;
+  total: number;
+}[] = [
+  { month: "January", total: 0 },
+  { month: "February", total: 0 },
+  { month: "March", total: 0 },
+  { month: "April", total: 0 },
+  { month: "May", total: 0 },
+  { month: "June", total: 0 },
   { month: "July", total: 0 },
   { month: "August", total: 0 },
   { month: "September", total: 0 },
@@ -32,26 +43,36 @@ const chartConfig = {
 
 export function RevenueSummary() {
   return (
-    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-      <BarChart accessibilityLayer data={chartData}>
-        <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="month"
-          tickLine={false}
-          tickMargin={10}
-          axisLine={false}
-          tickFormatter={(value) => value.slice(0, 3)}
-        />
-        <YAxis
-          tickLine={false}
-          tickMargin={10}
-          axisLine={false}
-          tickFormatter={(value) => `$${value}`}
-        />
-        <ChartTooltip content={<ChartTooltipContent />} />
+    <Card>
+      <CardHeader>
+        <CardTitle>Revenue Overview</CardTitle>
+        <CardDescription>
+          Summary of the revenue generated per month.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+          <BarChart accessibilityLayer data={chartData}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) => value.slice(0, 3)}
+            />
+            <YAxis
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) => `$${value}`}
+            />
+            <ChartTooltip content={<ChartTooltipContent />} />
 
-        <Bar dataKey="total" fill="var(--color-total)" radius={4} />
-      </BarChart>
-    </ChartContainer>
+            <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
   );
 }
