@@ -27,90 +27,97 @@ import {
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
-const data = {
-  user: {
-    name: "",
-    email: "",
-    avatar: "",
+const navMainAdmin = [
+  {
+    title: "Properties",
+    url: "/properties",
+    icon: Building,
+    isActive: false,
+    items: [
+      {
+        title: "All Properties",
+        url: "/properties",
+      },
+      {
+        title: "Add Property",
+        url: "/properties/add",
+      },
+    ],
   },
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: LayoutDashboard,
-      isActive: true,
-      items: [],
-    },
-    {
-      title: "Properties",
-      url: "/properties",
-      icon: Building,
-      isActive: false,
-      items: [
-        {
-          title: "All Properties",
-          url: "/properties",
-        },
-        {
-          title: "Add Property",
-          url: "/properties/add",
-        },
-      ],
-    },
-    {
-      title: "Units",
-      url: "/units",
-      icon: House,
-      items: [
-        {
-          title: "All Units",
-          url: "/units",
-        },
-        {
-          title: "Add Unit",
-          url: "/units/add",
-        },
-      ],
-    },
-    {
-      title: "Tenants",
-      url: "/tenants",
-      icon: Users,
-      items: [
-        {
-          title: "All Tenants",
-          url: "/tenants",
-        },
-        {
-          title: "Add Tenant",
-          url: "/tenants/add",
-        },
-      ],
-    },
-    {
-      title: "Rent Collection",
-      url: "/rent-collection",
-      icon: HandCoins,
-      items: [],
-    },
-    {
-      title: "Maintenance Requests",
-      url: "/maintenance-requests",
-      icon: Wrench,
-      items: [],
-    },
-  ],
-  properties: [],
-};
+  {
+    title: "Units",
+    url: "/units",
+    icon: House,
+    items: [
+      {
+        title: "All Units",
+        url: "/units",
+      },
+      {
+        title: "Add Unit",
+        url: "/units/add",
+      },
+    ],
+  },
+  {
+    title: "Tenants",
+    url: "/tenants",
+    icon: Users,
+    items: [
+      {
+        title: "All Tenants",
+        url: "/tenants",
+      },
+      {
+        title: "Add Tenant",
+        url: "/tenants/add",
+      },
+    ],
+  },
+  {
+    title: "Rent Collection",
+    url: "/rent-collection",
+    icon: HandCoins,
+    items: [],
+  },
+];
+
+const navMainTenant = [
+  {
+    title: "Rent",
+    url: "/rent",
+    icon: House,
+    items: [],
+  },
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
 
-  if (session?.user) {
-    data.user.name = session.user.name ?? session.user.email ?? data.user.name;
-    data.user.email = session.user.email ?? data.user.email;
-    data.user.avatar = session.user.image ?? data.user.avatar;
-  }
+  const data = {
+    user: {
+      name: (session?.user?.name || session?.user.email) ?? "",
+      email: session?.user?.email ?? "",
+      avatar: session?.user?.image ?? "",
+    },
+    navMain: [
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: LayoutDashboard,
+        isActive: true,
+        items: [],
+      },
+      ...(session?.user?.role === "admin" ? navMainAdmin : navMainTenant),
+      {
+        title: "Maintenance Requests",
+        url: "/maintenance-requests",
+        icon: Wrench,
+        items: [],
+      },
+    ],
+    properties: [],
+  };
 
   return (
     <Sidebar collapsible="icon" {...props}>
