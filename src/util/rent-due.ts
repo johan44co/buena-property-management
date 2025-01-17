@@ -1,115 +1,152 @@
 import { Unit, RentPayment } from "@prisma/client";
+import { convertLocalToUTC } from "./timezone";
+import { startOfDay } from "date-fns";
+
+interface RentPeriod {
+  startDate: Date;
+  endDate: Date;
+  amount: number;
+  daysInPeriod: number;
+  isFullMonth: boolean;
+  current: boolean;
+}
+
+interface RentStatus {
+  pending: boolean;
+  daysLate: number;
+}
 
 interface RentDueResult {
-  rentDue: number;
+  leaseStart: Date;
+  leaseEnd: Date;
   totalDue: number;
+  dueDate: Date | null;
   nextDueDate: Date | null;
-  paymentStatus: {
-    current: boolean;
-    daysLate: number;
-    unpaidMonths: number;
+  rentStatus: RentStatus;
+  periods: RentPeriod[];
+}
+
+function getLastDayOfMonth(date: Date): Date {
+  const lastDay = new Date(date);
+  lastDay.setMonth(lastDay.getMonth() + 1);
+  lastDay.setDate(0);
+  lastDay.setHours(23, 59, 59, 999);
+  return lastDay;
+}
+
+function calculatePeriodAmount(
+  rentAmount: number,
+  daysInPeriod: number,
+  isFullMonth: boolean,
+  daysInMonth: number,
+): number {
+  return rentAmount * (isFullMonth ? 1 : daysInPeriod / daysInMonth);
+}
+
+function calculateMonthsBetweenDates(startDate: Date, endDate: Date): number {
+  return (
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+    (endDate.getMonth() - startDate.getMonth()) +
+    1
+  );
+}
+
+export function calculateRentDue(
+  unit: Unit,
+  rentPayments: RentPayment[],
+): RentDueResult {
+  const today = convertLocalToUTC(startOfDay(new Date()));
+  const leaseStart = unit.leaseStart!;
+  const leaseEnd = unit.leaseEnd!;
+
+  const periods = generateRentPeriods(unit, leaseStart, leaseEnd, today);
+  const totalPaid = rentPayments.reduce(
+    (sum, payment) => sum + payment.amountPaid,
+    0,
+  );
+  const totalDue =
+    periods.reduce((sum, period) => sum + period.amount, 0) - totalPaid;
+  const currentPeriod = periods.find((period) => period.current);
+  const nextPeriod = periods.find((period) => period.startDate > today);
+
+  const rentStatus: RentStatus = {
+    pending: totalDue > 0,
+    daysLate: calculateDaysLate(today, currentPeriod?.startDate, totalDue),
   };
-  partialMonth?: {
-    days: number;
-    amount: number;
+
+  return {
+    leaseStart,
+    leaseEnd,
+    totalDue,
+    dueDate: currentPeriod?.startDate ?? null,
+    nextDueDate: nextPeriod?.startDate ?? null,
+    rentStatus,
+    periods,
   };
 }
 
-/**
- * Calculates rent due for a unit considering lease terms, payments, and late fees
- * @param unit - Unit information including lease terms
- * @param rentPayments - Array of past rent payments
- * @returns RentDueResult object with detailed payment information
- */
-export const rentDueCalculation = (
-  unit?: Unit | null,
-  rentPayments: RentPayment[] = [],
-): RentDueResult => {
-  // Input validation
-  if (!unit || typeof unit.rentAmount !== "number" || unit.rentAmount < 0) {
-    throw new Error("Invalid unit data");
+function generateRentPeriods(
+  unit: Unit,
+  leaseStart: Date,
+  leaseEnd: Date,
+  today: Date,
+): RentPeriod[] {
+  const numberOfMonths = calculateMonthsBetweenDates(leaseStart, leaseEnd);
+  const periods: RentPeriod[] = [];
+
+  for (let i = 0; i < numberOfMonths; i++) {
+    const periodStart = new Date(leaseStart);
+    periodStart.setMonth(leaseStart.getMonth() + i);
+    if (i !== 0) periodStart.setDate(1);
+
+    const periodEnd = calculatePeriodEndDate(leaseStart, leaseEnd, i);
+    const lastDayOfMonth = getLastDayOfMonth(periodStart);
+    const daysInPeriod = periodEnd.getDate() - periodStart.getDate() + 1;
+    const isFullMonth = daysInPeriod === lastDayOfMonth.getDate();
+
+    periods.push({
+      startDate: periodStart,
+      endDate: convertLocalToUTC(periodEnd),
+      amount: calculatePeriodAmount(
+        unit.rentAmount,
+        daysInPeriod,
+        isFullMonth,
+        lastDayOfMonth.getDate(),
+      ),
+      daysInPeriod,
+      isFullMonth,
+      current: today >= periodStart && today <= periodEnd,
+    });
   }
 
-  const now = new Date();
-  const leaseStart = unit.leaseStart ? new Date(unit.leaseStart) : new Date();
-  const leaseEnd = unit.leaseEnd ? new Date(unit.leaseEnd) : new Date();
-  const rentAmount = unit.rentAmount;
+  return periods;
+}
 
-  if (!unit.isOccupied) {
-    return {
-      rentDue: 0,
-      totalDue: 0,
-      nextDueDate: null,
-      paymentStatus: { current: true, daysLate: 0, unpaidMonths: 0 },
-    };
+function calculatePeriodEndDate(
+  leaseStart: Date,
+  leaseEnd: Date,
+  monthIndex: number,
+): Date {
+  const endDate = new Date(leaseStart);
+  endDate.setMonth(leaseStart.getMonth() + monthIndex + 1);
+  endDate.setDate(0);
+  endDate.setHours(23, 59, 59, 999);
+
+  if (endDate > leaseEnd) {
+    endDate.setTime(leaseEnd.getTime());
+    endDate.setHours(23, 59, 59, 999);
   }
 
-  // Calculate partial month for lease end
-  let partialMonthEnd;
-  if (
-    leaseEnd.getMonth() === now.getMonth() &&
-    leaseEnd.getFullYear() === now.getFullYear()
-  ) {
-    const daysInMonth = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0,
-    ).getDate();
-    const daysInLease = leaseEnd.getDate();
-    partialMonthEnd = {
-      days: daysInLease,
-      amount: (rentAmount / daysInMonth) * daysInLease,
-    };
-  }
+  return endDate;
+}
 
-  // Calculate unpaid rent and late fees
-  const startDate = new Date(leaseStart);
-  let unpaidRent = 0;
-  let unpaidMonths = 0;
-
-  while (startDate < now) {
-    // Only process if within lease period
-    if (startDate >= leaseStart && startDate <= leaseEnd) {
-      const monthPayments = rentPayments.filter(
-        (payment) =>
-          payment.paymentDate.getMonth() === startDate.getMonth() &&
-          payment.paymentDate.getFullYear() === startDate.getFullYear() &&
-          payment.status === "paid",
-      );
-
-      const monthPaid = monthPayments.reduce(
-        (sum, payment) => sum + payment.amountPaid,
-        0,
-      );
-
-      if (monthPaid < rentAmount) {
-        unpaidRent = rentAmount - monthPaid;
-        unpaidMonths++;
-      }
-    }
-    startDate.setMonth(startDate.getMonth() + 1);
-  }
-
-  // Calculate nextDueDate based on lease end
-  const nextDueDate =
-    leaseEnd && leaseEnd < new Date(now.getFullYear(), now.getMonth() + 1, 1)
-      ? null
-      : new Date(now.getFullYear(), now.getMonth() + 1, 1);
-
-  const daysLate = now.getDate();
-
-  const baseRentDue = partialMonthEnd ? partialMonthEnd.amount : rentAmount;
-  const totalDue = unpaidMonths > 1 ? baseRentDue + unpaidRent : baseRentDue;
-
-  return {
-    rentDue: baseRentDue,
-    totalDue,
-    nextDueDate,
-    paymentStatus: {
-      current: unpaidRent === 0,
-      daysLate,
-      unpaidMonths,
-    },
-    partialMonth: partialMonthEnd,
-  };
-};
+function calculateDaysLate(
+  today: Date,
+  dueDate: Date | undefined,
+  totalDue: number,
+): number {
+  if (!dueDate || totalDue <= 0 || today <= dueDate) return 0;
+  return Math.ceil(
+    (today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24),
+  );
+}

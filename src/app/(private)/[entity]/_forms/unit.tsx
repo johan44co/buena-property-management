@@ -51,7 +51,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { getProperties } from "@/util/property";
 import { getUsers } from "@/util/user";
-import { adjustForTimezone, formatForTimezone } from "@/util/timezone";
+import { convertLocalToUTC, convertUTCToLocal } from "@/util/timezone";
 
 const unitFormSchema = z
   .object({
@@ -399,11 +399,11 @@ export default function UnitForm({
                         mode="single"
                         selected={
                           field.value
-                            ? new Date(formatForTimezone(field.value))
+                            ? new Date(convertUTCToLocal(field.value))
                             : undefined
                         }
                         onSelect={(date) =>
-                          field.onChange(date ? adjustForTimezone(date) : date)
+                          field.onChange(date ? convertLocalToUTC(date) : date)
                         }
                         defaultMonth={field.value}
                         initialFocus
@@ -445,11 +445,11 @@ export default function UnitForm({
                         mode="single"
                         selected={
                           field.value
-                            ? new Date(formatForTimezone(field.value))
+                            ? new Date(convertUTCToLocal(field.value))
                             : undefined
                         }
                         onSelect={(date) => {
-                          field.onChange(date ? adjustForTimezone(date) : date);
+                          field.onChange(date ? convertLocalToUTC(date) : date);
                         }}
                         defaultMonth={field.value}
                         disabled={(date) => {
