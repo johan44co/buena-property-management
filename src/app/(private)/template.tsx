@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProperty } from "@/util/property";
-import { getUnit } from "@/util/unit";
+import { getUnit, getUnitRent } from "@/util/unit";
 import { getUser } from "@/util/user";
 import { useParams, usePathname } from "next/navigation";
 import React from "react";
@@ -36,6 +36,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
           return user?.name || user?.email;
         },
         units: async (id: string) => (await getUnit(id)).unit?.unitNumber,
+        rent: async (id: string) => (await getUnitRent(id)).unit?.unitNumber,
       };
 
       const breadcrumbItems = await Promise.all(
@@ -62,6 +63,17 @@ export default function Template({ children }: { children: React.ReactNode }) {
           breadcrumbItems.splice(1, 0, {
             name: unit.property.name,
             href: `/properties/${unit.property.id}`,
+          });
+        }
+      }
+
+      // Handle special case for rent to include property address
+      if (params.entity === "rent" && params.id) {
+        const { unit } = await getUnitRent(params.id);
+        if (unit?.property) {
+          breadcrumbItems.splice(1, 0, {
+            name: unit.property.address,
+            href: `/rent/${unit.id}`,
           });
         }
       }

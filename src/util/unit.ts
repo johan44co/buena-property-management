@@ -166,7 +166,7 @@ export const getUnitRent = async (
       include: {
         ...include,
         property: {
-          select: { name: true, id: true },
+          select: { name: true, id: true, address: true },
         },
       },
     });
