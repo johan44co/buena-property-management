@@ -53,15 +53,48 @@ import { getProperties } from "@/util/property";
 import { getUsers } from "@/util/user";
 import { adjustForTimezone, formatForTimezone } from "@/util/timezone";
 
-const unitFormSchema = z.object({
-  unitNumber: z.string().min(1, "Unit number is required"),
-  rentAmount: z.number().min(1, "Rent amount is required"),
-  isOccupied: z.boolean().default(false),
-  leaseStart: z.date().optional(),
-  leaseEnd: z.date().optional(),
-  propertyId: z.string(),
-  tenantId: z.string().optional(),
-});
+const unitFormSchema = z
+  .object({
+    unitNumber: z.string().min(1, "Unit number is required"),
+    rentAmount: z.number().min(1, "Rent amount is required"),
+    isOccupied: z.boolean().default(false),
+    leaseStart: z.date().optional(),
+    leaseEnd: z.date().optional(),
+    propertyId: z.string(),
+    tenantId: z.string().optional(),
+  })
+  .superRefine((data, context) => {
+    if (data.isOccupied && !data.tenantId) {
+      return context.addIssue({
+        code: "custom",
+        message: "Tenant is required if unit is occupied",
+        path: ["tenantId"],
+      });
+    }
+    // leaseStart and leaseEnd are required if unit is occupied
+    if (data.isOccupied && !data.leaseStart) {
+      return context.addIssue({
+        code: "custom",
+        message: "Lease start date is required if unit is occupied",
+        path: ["leaseStart"],
+      });
+    }
+    if (data.isOccupied && !data.leaseEnd) {
+      return context.addIssue({
+        code: "custom",
+        message: "Lease end date is required if unit is occupied",
+        path: ["leaseEnd"],
+      });
+    }
+    // leaseEnd must be after leaseStart
+    if (data.leaseStart && data.leaseEnd && data.leaseStart > data.leaseEnd) {
+      return context.addIssue({
+        code: "custom",
+        message: "Lease end date must be after lease start date",
+        path: ["leaseEnd"],
+      });
+    }
+  });
 
 type UnitFormValues = z.infer<typeof unitFormSchema>;
 
@@ -225,9 +258,9 @@ export default function UnitForm({
                             <CommandGroup>
                               <CommandItem
                                 key="null"
-                                value={undefined}
+                                value={""}
                                 onSelect={() => {
-                                  field.onChange(undefined);
+                                  field.onChange("");
                                   setTenantInputOpen(false);
                                 }}
                               >
@@ -342,9 +375,9 @@ export default function UnitForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Lease Start Date</FormLabel>
-                  <FormControl>
-                    <Popover>
-                      <PopoverTrigger asChild>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
                         <Button
                           variant={"outline"}
                           className={cn(
@@ -359,25 +392,24 @@ export default function UnitForm({
                             <span>Pick a date</span>
                           )}
                         </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={
-                            field.value
-                              ? new Date(formatForTimezone(field.value))
-                              : undefined
-                          }
-                          onSelect={(date) =>
-                            field.onChange(
-                              date ? adjustForTimezone(date) : date,
-                            )
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </FormControl>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          field.value
+                            ? new Date(formatForTimezone(field.value))
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          field.onChange(date ? adjustForTimezone(date) : date)
+                        }
+                        defaultMonth={field.value}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
@@ -389,9 +421,9 @@ export default function UnitForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Lease End Date</FormLabel>
-                  <FormControl>
-                    <Popover>
-                      <PopoverTrigger asChild>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
                         <Button
                           variant={"outline"}
                           className={cn(
@@ -406,25 +438,28 @@ export default function UnitForm({
                             <span>Pick a date</span>
                           )}
                         </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={
-                            field.value
-                              ? new Date(formatForTimezone(field.value))
-                              : undefined
-                          }
-                          onSelect={(date) =>
-                            field.onChange(
-                              date ? adjustForTimezone(date) : date,
-                            )
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </FormControl>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          field.value
+                            ? new Date(formatForTimezone(field.value))
+                            : undefined
+                        }
+                        onSelect={(date) => {
+                          field.onChange(date ? adjustForTimezone(date) : date);
+                        }}
+                        defaultMonth={field.value}
+                        disabled={(date) => {
+                          const leaseStart = form.getValues("leaseStart");
+                          return leaseStart ? date < leaseStart : false;
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
