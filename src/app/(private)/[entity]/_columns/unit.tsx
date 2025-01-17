@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Unit } from "@prisma/client";
 import { format } from "date-fns";
 import RowActions from "@/components/row-actions";
+import { formatCurrency } from "@/util/currency";
 
 export type UnitDataColumns = Pick<
   Unit,
@@ -49,11 +50,7 @@ export const unitColumns: ColumnDef<UnitDataColumns>[] = [
     header: "Rent Amount",
     cell: ({ row }) => {
       const unit = row.original;
-      const rentAmount = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "EUR",
-      }).format(unit.rentAmount);
-      return rentAmount;
+      return formatCurrency(unit.rentAmount);
     },
   },
   {

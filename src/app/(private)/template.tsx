@@ -101,7 +101,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
                 </BreadcrumbItem>
               )}
               {breadcrumb.map(({ name, href }, index) => (
-                <React.Fragment key={href}>
+                <React.Fragment key={index}>
                   <BreadcrumbItem>
                     <BreadcrumbLink className="capitalize" href={href}>
                       {name}
