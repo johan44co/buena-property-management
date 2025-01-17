@@ -88,7 +88,13 @@ export const updateUnit = async (id: string, data: UnitData) => {
   }
 };
 
-export const getUnits = async () => {
+type GetUnitArgs = Parameters<typeof prisma.unit.findMany>[0];
+
+export const getUnits = async ({
+  where,
+  include,
+  ...rest
+}: GetUnitArgs = {}) => {
   try {
     const session = await getSession();
     if (!session || !session.user?.id) {
@@ -96,13 +102,18 @@ export const getUnits = async () => {
     }
 
     const units = await prisma.unit.findMany({
-      where: { property: { ownerId: session.user.id } },
+      where: {
+        property: { ownerId: session.user.id },
+        ...where,
+      },
       include: {
         property: {
           select: { name: true },
         },
         tenant: { select: { name: true } },
+        ...include,
       },
+      ...rest,
     });
 
     return { units };
