@@ -5,6 +5,7 @@ import { unitColumns } from "./_columns/unit";
 import { getProperties } from "@/util/property";
 import { getUsers } from "@/util/user";
 import { getUnits } from "@/util/unit";
+import redirectIfAdmin from "@/lib/redirect-if-admin";
 
 export const dynamicParams = false;
 
@@ -19,6 +20,9 @@ export function generateStaticParams() {
     {
       entity: "units",
     },
+    {
+      entity: "maintenance-requests",
+    },
   ];
 }
 
@@ -29,6 +33,8 @@ export default async function Page({
     entity: "properties" | "tenants" | "units";
   }>;
 }) {
+  await redirectIfAdmin();
+
   const entity = (await params).entity;
 
   const Table = (async () => {
