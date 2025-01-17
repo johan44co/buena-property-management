@@ -52,7 +52,7 @@ export const getUnit = async (id: string) => {
       where: { id, property: { ownerId: session.user.id } },
       include: {
         property: {
-          select: { name: true },
+          select: { name: true, id: true },
         },
       },
     });

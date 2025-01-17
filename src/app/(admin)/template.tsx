@@ -27,35 +27,50 @@ export default function Template({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     const parts = pathname.split("/").filter(Boolean);
 
-    Promise.all(
-      parts.map(async (part, index) => {
-        if (part === params.id) {
-          const entityMap = {
-            properties: async () =>
-              (await getProperty(params.id)).property?.name,
-            tenants: async () => {
-              const { user } = await getUser(params.id);
-              return user?.name || user?.email;
-            },
-            units: async () => (await getUnit(params.id)).unit?.unitNumber,
-          };
+    const generateBreadcrumbItems = async () => {
+      const entityNameResolvers = {
+        properties: async (id: string) =>
+          (await getProperty(id)).property?.name,
+        tenants: async (id: string) => {
+          const { user } = await getUser(id);
+          return user?.name || user?.email;
+        },
+        units: async (id: string) => (await getUnit(id)).unit?.unitNumber,
+      };
 
-          const getName = entityMap[params.entity as keyof typeof entityMap];
-          if (getName) {
-            return {
-              name: await getName(),
-              href: `/${parts.slice(0, index + 1).join("/")}`,
-            };
+      const breadcrumbItems = await Promise.all(
+        parts.map(async (part, index) => {
+          const href = `/${parts.slice(0, index + 1).join("/")}`;
+
+          if (part !== params.id) {
+            return { name: part, href };
           }
+
+          const resolver =
+            entityNameResolvers[
+              params.entity as keyof typeof entityNameResolvers
+            ];
+          const name = resolver ? await resolver(params.id) : part;
+          return { name, href };
+        }),
+      );
+
+      // Handle special case for units to include property
+      if (params.entity === "units" && params.id) {
+        const { unit } = await getUnit(params.id);
+        if (unit?.property) {
+          breadcrumbItems.splice(1, 0, {
+            name: unit.property.name,
+            href: `/properties/${unit.property.id}`,
+          });
         }
-        return {
-          name: part,
-          href: `/${parts.slice(0, index + 1).join("/")}`,
-        };
-      }),
-    )
-      .then(setBreadcrumb)
-      .finally(() => setLoading(false));
+      }
+
+      setBreadcrumb(breadcrumbItems);
+      setLoading(false);
+    };
+
+    generateBreadcrumbItems().catch(() => setLoading(false));
   }, [pathname, params.id, params.entity]);
 
   return (
