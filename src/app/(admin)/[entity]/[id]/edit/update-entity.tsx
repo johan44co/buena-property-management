@@ -2,25 +2,36 @@
 
 import PropertyForm from "@/app/(admin)/[entity]/_forms/property";
 import TenantForm from "@/app/(admin)/[entity]/_forms/tenant";
+import UnitForm from "@/app/(admin)/[entity]/_forms/unit";
 import { updateProperty } from "@/util/property";
+import { updateUnit } from "@/util/unit";
 import { updateUser } from "@/util/user";
-import { Property, User } from "@prisma/client";
-import { useRouter } from "next/navigation";
+import { Property, Unit, User } from "@prisma/client";
+import { redirect, useRouter } from "next/navigation";
 
 type EntityProps =
   | {
       id: string;
       entity: "properties";
-      data?: Property;
+      data?: Property | null;
     }
   | {
       id: string;
       entity: "tenants";
-      data: User;
+      data?: User | null;
+    }
+  | {
+      id: string;
+      entity: "units";
+      data?: Unit | null;
     };
 
 export function UpdateEntity({ id, entity, data }: EntityProps) {
   const router = useRouter();
+
+  if (!data) {
+    redirect(`/${entity}`);
+  }
 
   switch (entity) {
     case "properties":
@@ -56,6 +67,27 @@ export function UpdateEntity({ id, entity, data }: EntityProps) {
               name: user.name || null,
             }).then((result) => {
               if (result.user) {
+                router.push(`/${entity}`);
+              }
+            });
+          }}
+        />
+      );
+    case "units":
+      return (
+        <UnitForm
+          title="Edit Unit"
+          description="Edit unit details."
+          submitText="Save"
+          unit={data as Unit}
+          onSubmitHandler={(unit) => {
+            updateUnit(id, {
+              ...unit,
+              leaseEnd: unit.leaseEnd || null,
+              leaseStart: unit.leaseStart || null,
+              tenantId: unit.tenantId || null,
+            }).then((result) => {
+              if (result.unit) {
                 router.push(`/${entity}`);
               }
             });

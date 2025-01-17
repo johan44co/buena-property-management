@@ -1,8 +1,10 @@
 import { EntityTable } from "@/app/(admin)/[entity]/entity-table";
 import { propertyColumns } from "./_columns/property";
 import { tenantColumns } from "./_columns/tenant";
+import { unitColumns } from "./_columns/unit";
 import { getProperties } from "@/util/property";
 import { getUsers } from "@/util/user";
+import { getUnits } from "@/util/unit";
 
 export const dynamicParams = false;
 
@@ -24,7 +26,7 @@ export default async function Page({
   params,
 }: {
   params: Promise<{
-    entity: "properties" | "tenants";
+    entity: "properties" | "tenants" | "units";
   }>;
 }) {
   const entity = (await params).entity;
@@ -36,14 +38,7 @@ export default async function Page({
         return (
           <EntityTable
             columns={propertyColumns}
-            data={
-              properties?.map((property) => ({
-                id: property.id,
-                type: property.type,
-                name: property.name,
-                status: property.status,
-              })) || []
-            }
+            data={properties || []}
             title="Properties"
             description="Manage your properties."
             inputFilterPlaceholder="Filter properties..."
@@ -54,16 +49,21 @@ export default async function Page({
         return (
           <EntityTable
             columns={tenantColumns}
-            data={
-              users?.map((user) => ({
-                id: user.id,
-                name: user.name,
-                email: user.email,
-              })) || []
-            }
+            data={users || []}
             title="Tenants"
             description="Manage your tenants."
             inputFilterPlaceholder="Filter tenants..."
+          />
+        );
+      case "units":
+        const { units } = await getUnits();
+        return (
+          <EntityTable
+            columns={unitColumns}
+            data={units || []}
+            title="Units"
+            description="Manage your units."
+            inputFilterPlaceholder="Filter units..."
           />
         );
       default:

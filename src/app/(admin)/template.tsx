@@ -10,13 +10,14 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProperty } from "@/util/property";
+import { getUnit } from "@/util/unit";
 import { getUser } from "@/util/user";
 import { useParams, usePathname } from "next/navigation";
 import React from "react";
 
 export default function Template({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const params = useParams();
+  const params = useParams<{ id: string; entity: string }>();
 
   const [breadcrumb, setBreadcrumb] = React.useState<
     { name?: string; href: string }[]
@@ -28,20 +29,24 @@ export default function Template({ children }: { children: React.ReactNode }) {
 
     Promise.all(
       parts.map(async (part, index) => {
-        if (parts[index - 1] === "properties" && part === params.id) {
-          const propertyName = (await getProperty(params.id)).property?.name;
-          return {
-            name: propertyName,
-            href: `/${parts.slice(0, index + 1).join("/")}`,
+        if (part === params.id) {
+          const entityMap = {
+            properties: async () =>
+              (await getProperty(params.id)).property?.name,
+            tenants: async () => {
+              const { user } = await getUser(params.id);
+              return user?.name || user?.email;
+            },
+            units: async () => (await getUnit(params.id)).unit?.unitNumber,
           };
-        }
-        if (parts[index - 1] === "tenants" && part === params.id) {
-          const { user } = await getUser(params.id);
-          const propertyName = user?.name || user?.email;
-          return {
-            name: propertyName,
-            href: `/${parts.slice(0, index + 1).join("/")}`,
-          };
+
+          const getName = entityMap[params.entity as keyof typeof entityMap];
+          if (getName) {
+            return {
+              name: await getName(),
+              href: `/${parts.slice(0, index + 1).join("/")}`,
+            };
+          }
         }
         return {
           name: part,
@@ -51,7 +56,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
     )
       .then(setBreadcrumb)
       .finally(() => setLoading(false));
-  }, [pathname, params.id]);
+  }, [pathname, params.id, params.entity]);
 
   return (
     <>

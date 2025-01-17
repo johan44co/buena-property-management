@@ -9,7 +9,6 @@ type UserData = Pick<User, "name" | "email">;
 export const createUser = async (data: UserData) => {
   try {
     const session = await getSession();
-    console.log(session);
     if (!session || !session.user?.id || session.user?.role !== "admin") {
       return { error: "Unauthorized" };
     }
@@ -39,7 +38,7 @@ export const getUser = async (id: string) => {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { id, createdById: session.user.id },
     });
 
     return { user };
@@ -58,7 +57,7 @@ export const updateUser = async (id: string, data: UserData) => {
     }
 
     const user = await prisma.user.update({
-      where: { id },
+      where: { id, createdById: session.user.id },
       data: {
         name: data.name,
         email: data.email,

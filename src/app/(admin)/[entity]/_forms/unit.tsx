@@ -45,10 +45,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { getProperties } from "@/util/property";
+import { getUsers } from "@/util/user";
 
 const unitFormSchema = z.object({
   unitNumber: z.string().min(1, "Unit number is required"),
@@ -64,16 +66,12 @@ type UnitFormValues = z.infer<typeof unitFormSchema>;
 
 export default function UnitForm({
   unit,
-  properties,
-  tenants,
   onSubmitHandler,
   title,
   description,
   submitText,
 }: {
   unit?: Unit;
-  properties: Property[];
-  tenants: User[];
   onSubmitHandler: (unit: UnitFormValues) => void;
   title: string;
   description: string;
@@ -105,6 +103,18 @@ export default function UnitForm({
 
   const [propertyInputOpen, setPropertyInputOpen] = useState(false);
   const [tenantInputOpen, setTenantInputOpen] = useState(false);
+
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [tenants, setTenants] = useState<User[]>([]);
+
+  useEffect(() => {
+    getProperties().then((result) => {
+      setProperties(result.properties || []);
+    });
+    getUsers().then((result) => {
+      setTenants(result.users || []);
+    });
+  }, []);
 
   return (
     <Card>
