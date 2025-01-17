@@ -34,13 +34,13 @@ interface DataTableProps<TData, TValue> {
   title: string;
   description: string;
   inputFilterPlaceholder: string;
+  filterColumn: keyof TData & string;
 }
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import React from "react";
-import { useParams } from "next/navigation";
 
 export function EntityTable<TData, TValue>({
   columns,
@@ -48,6 +48,7 @@ export function EntityTable<TData, TValue>({
   title,
   description,
   inputFilterPlaceholder,
+  filterColumn,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -64,9 +65,6 @@ export function EntityTable<TData, TValue>({
       columnFilters,
     },
   });
-
-  const { entity } = useParams();
-  const filterColumn = entity === "units" ? "unitNumber" : "name";
 
   return (
     <Card>

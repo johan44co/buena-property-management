@@ -1,4 +1,4 @@
-import { EntityTable } from "@/app/(admin)/[entity]/entity-table";
+import { EntityTable } from "@/components/entity-table";
 import { propertyColumns } from "./_columns/property";
 import { tenantColumns } from "./_columns/tenant";
 import { unitColumns } from "./_columns/unit";
@@ -42,6 +42,7 @@ export default async function Page({
             title="Properties"
             description="Manage your properties."
             inputFilterPlaceholder="Filter properties..."
+            filterColumn={"name"}
           />
         );
       case "tenants":
@@ -53,6 +54,7 @@ export default async function Page({
             title="Tenants"
             description="Manage your tenants."
             inputFilterPlaceholder="Filter tenants..."
+            filterColumn={"name"}
           />
         );
       case "units":
@@ -64,6 +66,7 @@ export default async function Page({
             title="Units"
             description="Manage your units."
             inputFilterPlaceholder="Filter units..."
+            filterColumn={"unitNumber"}
           />
         );
       default:
