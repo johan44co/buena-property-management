@@ -45,21 +45,15 @@ export const unitColumns: ColumnDef<UnitDataColumns>[] = [
     },
   },
   {
-    accessorKey: "isOccupied",
-    header: "Occupied",
+    accessorKey: "rentAmount",
+    header: "Rent Amount",
     cell: ({ row }) => {
       const unit = row.original;
-      return unit.isOccupied ? "Yes" : "No";
-    },
-  },
-  {
-    accessorKey: "leaseEnd",
-    header: "Lease End",
-    cell: ({ row }) => {
-      const unit = row.original;
-      if (!unit.leaseEnd) return "No end date";
-      const leaseEnd = format(new Date(unit.leaseEnd), "MMMM d, yyyy");
-      return leaseEnd;
+      const rentAmount = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "EUR",
+      }).format(unit.rentAmount);
+      return rentAmount;
     },
   },
   {
@@ -73,15 +67,13 @@ export const unitColumns: ColumnDef<UnitDataColumns>[] = [
     },
   },
   {
-    accessorKey: "rentAmount",
-    header: "Rent Amount",
+    accessorKey: "leaseEnd",
+    header: "Lease End",
     cell: ({ row }) => {
       const unit = row.original;
-      const rentAmount = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "EUR",
-      }).format(unit.rentAmount);
-      return rentAmount;
+      if (!unit.leaseEnd) return "No end date";
+      const leaseEnd = format(new Date(unit.leaseEnd), "MMMM d, yyyy");
+      return leaseEnd;
     },
   },
   {
