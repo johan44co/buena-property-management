@@ -51,6 +51,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { getProperties } from "@/util/property";
 import { getUsers } from "@/util/user";
+import { adjustForTimezone, formatForTimezone } from "@/util/timezone";
 
 const unitFormSchema = z.object({
   unitNumber: z.string().min(1, "Unit number is required"),
@@ -363,9 +364,15 @@ export default function UnitForm({
                         <Calendar
                           mode="single"
                           selected={
-                            field.value ? new Date(field.value) : undefined
+                            field.value
+                              ? new Date(formatForTimezone(field.value))
+                              : undefined
                           }
-                          onSelect={field.onChange}
+                          onSelect={(date) =>
+                            field.onChange(
+                              date ? adjustForTimezone(date) : date,
+                            )
+                          }
                           initialFocus
                         />
                       </PopoverContent>
@@ -404,9 +411,15 @@ export default function UnitForm({
                         <Calendar
                           mode="single"
                           selected={
-                            field.value ? new Date(field.value) : undefined
+                            field.value
+                              ? new Date(formatForTimezone(field.value))
+                              : undefined
                           }
-                          onSelect={field.onChange}
+                          onSelect={(date) =>
+                            field.onChange(
+                              date ? adjustForTimezone(date) : date,
+                            )
+                          }
                           initialFocus
                         />
                       </PopoverContent>

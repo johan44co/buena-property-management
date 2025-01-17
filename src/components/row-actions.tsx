@@ -15,6 +15,17 @@ export default function RowActions({ id }: { id: string }) {
   const router = useRouter();
   const params = useParams();
 
+  if (params.entity === "rent") {
+    return (
+      <Button
+        onClick={() => router.push(`/${params.entity}/${id}/pay`)}
+        variant="outline"
+      >
+        <span>Pay</span>
+      </Button>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

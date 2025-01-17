@@ -58,7 +58,7 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String    @unique
-  emailVerified DateTime?
+  emailVerified DateTime? @db.Timestamptz()
   image         String?
   role          UserRole  @default(admin)
   createdById   String?
@@ -76,8 +76,8 @@ model User {
   notifications       Notification[]
   units               Unit[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
 }
 
 model Account {
@@ -97,8 +97,8 @@ model Account {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
 
   @@unique([provider, providerAccountId])
 }
@@ -107,17 +107,17 @@ model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
-  expires      DateTime
+  expires      DateTime @db.Timestamptz()
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
 }
 
 model VerificationToken {
   identifier String
   token      String   @unique
-  expires    DateTime
+  expires    DateTime @db.Timestamptz()
 
   @@unique([identifier, token])
 }
@@ -129,8 +129,8 @@ model Property {
   type      PropertyType
   ownerId   String
   status    PropertyStatus
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  createdAt DateTime       @default(now()) @db.Timestamptz()
+  updatedAt DateTime       @updatedAt @db.Timestamptz()
 
   owner User   @relation("PropertyOwner", fields: [ownerId], references: [id])
   units Unit[]
@@ -143,11 +143,11 @@ model Unit {
   tenantId   String?
   rentAmount Float
   isOccupied Boolean   @default(false)
-  leaseStart DateTime?
-  leaseEnd   DateTime?
+  leaseStart DateTime? @db.Timestamptz()
+  leaseEnd   DateTime? @db.Timestamptz()
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
 
   property            Property             @relation(fields: [propertyId], references: [id])
   tenant              User?                @relation(fields: [tenantId], references: [id])
@@ -160,13 +160,13 @@ model RentPayment {
   id          String     @id @default(cuid())
   unitId      String
   tenantId    String
-  paymentDate DateTime   @default(now())
+  paymentDate DateTime   @default(now()) @db.Timestamptz()
   amountPaid  Float
   status      RentStatus
-  dueDate     DateTime?
+  dueDate     DateTime?  @db.Timestamptz()
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
 
   unit   Unit @relation(fields: [unitId], references: [id])
   tenant User @relation(fields: [tenantId], references: [id])
@@ -179,8 +179,8 @@ model MaintenanceRequest {
   description String
   status      MaintenanceStatus
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime? @db.Timestamptz()
 
   unit   Unit @relation(fields: [unitId], references: [id])
   tenant User @relation(fields: [tenantId], references: [id])
@@ -193,8 +193,8 @@ model Document {
   uploadedBy String
   fileUrl    String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
 
   unit           Unit @relation(fields: [unitId], references: [id])
   uploadedByUser User @relation(fields: [uploadedBy], references: [id])
@@ -207,8 +207,8 @@ model Notification {
   type    NotificationType
   isRead  Boolean          @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
 
   user User @relation(fields: [userId], references: [id])
 }

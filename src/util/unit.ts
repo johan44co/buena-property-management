@@ -88,13 +88,42 @@ export const updateUnit = async (id: string, data: UnitData) => {
   }
 };
 
-type GetUnitArgs = Parameters<typeof prisma.unit.findMany>[0];
+type GetUnitsArgs = Parameters<typeof prisma.unit.findMany>[0];
 
 export const getUnits = async ({
   where,
   include,
   ...rest
-}: GetUnitArgs = {}) => {
+}: GetUnitsArgs = {}) => {
+  try {
+    const session = await getSession();
+    if (!session || !session.user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    const units = await prisma.unit.findMany({
+      ...rest,
+      where: {
+        ...where,
+        property: { ownerId: session.user.id },
+      },
+      include: {
+        ...include,
+        property: {
+          select: { name: true },
+        },
+        tenant: { select: { name: true } },
+      },
+    });
+
+    return { units };
+  } catch (error) {
+    console.error(error);
+    return { error: "An error occurred while retrieving the units" };
+  }
+};
+
+export const getUnitsRent = async () => {
   try {
     const session = await getSession();
     if (!session || !session.user?.id) {
@@ -103,22 +132,48 @@ export const getUnits = async ({
 
     const units = await prisma.unit.findMany({
       where: {
-        property: { ownerId: session.user.id },
-        ...where,
+        tenantId: session.user.id,
       },
       include: {
         property: {
-          select: { name: true },
+          select: { name: true, address: true },
         },
-        tenant: { select: { name: true } },
-        ...include,
       },
-      ...rest,
     });
 
     return { units };
   } catch (error) {
     console.error(error);
     return { error: "An error occurred while retrieving the units" };
+  }
+};
+
+type GetUnitRentArgs = Parameters<typeof prisma.unit.findUnique>[0];
+
+export const getUnitRent = async (
+  id: string,
+  { where, include, ...rest }: Partial<GetUnitRentArgs> = {},
+) => {
+  try {
+    const session = await getSession();
+    if (!session || !session.user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    const unit = await prisma.unit.findUnique({
+      ...rest,
+      where: { ...where, id, tenantId: session.user.id },
+      include: {
+        ...include,
+        property: {
+          select: { name: true, id: true },
+        },
+      },
+    });
+
+    return { unit };
+  } catch (error) {
+    console.error(error);
+    return { error: "An error occurred while retrieving the unit" };
   }
 };
