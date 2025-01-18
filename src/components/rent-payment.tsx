@@ -1,3 +1,4 @@
+"use client";
 import { formatCurrency } from "@/util/currency";
 import { convertUTCToLocal } from "@/util/timezone";
 import {
@@ -12,6 +13,7 @@ import { Unit } from "@prisma/client";
 import { Badge } from "./ui/badge";
 import { format } from "date-fns";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 export default function RentPayment({
   rentDue: { totalDue, nextDueDate, rentStatus, periods },
@@ -21,6 +23,7 @@ export default function RentPayment({
   unit: Unit & { property: { address: string } };
 }) {
   const currentPeriod = periods.find((period) => period.current);
+  const router = useRouter();
 
   return (
     <Card>
@@ -65,7 +68,11 @@ export default function RentPayment({
             </span>
           </div>
         </div>
-        <Button size="lg" className="w-full text-md">
+        <Button
+          size="lg"
+          className="w-full text-md"
+          onClick={() => router.push(`/rent/${unit.id}/checkout`)}
+        >
           Checkout
         </Button>
       </CardContent>
