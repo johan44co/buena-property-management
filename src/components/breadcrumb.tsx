@@ -12,10 +12,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getProperty } from "@/util/property";
 import { getUnit, getUnitRent } from "@/util/unit";
 import { getUser } from "@/util/user";
+import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import React from "react";
 
-export default function Template({ children }: { children: React.ReactNode }) {
+export default function BreadcrumbComponent() {
   const pathname = usePathname();
   const params = useParams<{ id: string; entity: string }>();
 
@@ -57,7 +58,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
       );
 
       // Handle special case for units to include property
-      if (params.entity === "units" && params.id) {
+      if (params.entity === "units" && params.id && parts.length > 1) {
         const { unit } = await getUnit(params.id);
         if (unit?.property) {
           breadcrumbItems.splice(1, 0, {
@@ -68,7 +69,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
       }
 
       // Handle special case for rent to include property address
-      if (params.entity === "rent" && params.id) {
+      if (params.entity === "rent" && params.id && parts.length > 1) {
         const { unit } = await getUnitRent(params.id);
         if (unit?.property) {
           breadcrumbItems.splice(1, 0, {
@@ -86,35 +87,34 @@ export default function Template({ children }: { children: React.ReactNode }) {
   }, [pathname, params.id, params.entity]);
 
   return (
-    <>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              {loading && (
+    <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+      <div className="flex items-center gap-2 px-4">
+        <SidebarTrigger className="-ml-1" />
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        <Breadcrumb>
+          <BreadcrumbList>
+            {loading && (
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <Skeleton className="h-4 w-48" />
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            )}
+            {breadcrumb.map(({ name, href }, index) => (
+              <React.Fragment key={index}>
                 <BreadcrumbItem>
-                  <BreadcrumbLink>
-                    <Skeleton className="h-4 w-48" />
+                  <BreadcrumbLink asChild>
+                    <Link href={href} className="capitalize">
+                      {name}
+                    </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
-              )}
-              {breadcrumb.map(({ name, href }, index) => (
-                <React.Fragment key={index}>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink className="capitalize" href={href}>
-                      {name}
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  {index < breadcrumb.length - 1 && <BreadcrumbSeparator />}
-                </React.Fragment>
-              ))}
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </header>
-      {children}
-    </>
+                {index < breadcrumb.length - 1 && <BreadcrumbSeparator />}
+              </React.Fragment>
+            ))}
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+    </header>
   );
 }
