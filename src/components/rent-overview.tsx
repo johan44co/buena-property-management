@@ -4,20 +4,7 @@ import { redirect } from "next/navigation";
 import PaymentSchedule from "@/components/payment-schedule";
 import RentPayment from "@/components/rent-payment";
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{
-    id: string;
-    entity: string;
-  }>;
-}) {
-  const { id, entity } = await params;
-
-  if (entity !== "rent") {
-    return redirect("/");
-  }
-
+export default async function RentOverview({ id }: { id: string }) {
   const { unit } = await getUnitRent(id, {
     include: {
       rentPayments: true,
@@ -25,7 +12,7 @@ export default async function Page({
   });
 
   if (!unit || !unit.leaseStart || !unit.leaseEnd) {
-    return redirect("/");
+    return redirect("/rent");
   }
 
   const rentDue = calculateRentDue(unit, unit.rentPayments);

@@ -10,21 +10,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+import React from "react";
 
 export default function RowActions({ id }: { id: string }) {
   const router = useRouter();
   const params = useParams();
 
-  if (params.entity === "rent") {
-    return (
-      <Button
-        onClick={() => router.push(`/${params.entity}/${id}/pay`)}
-        variant="outline"
-      >
-        <span>Pay</span>
-      </Button>
-    );
-  }
+  const defaultActions = [
+    {
+      action: "Edit",
+      onClick: () => router.push(`/${params.entity}/${id}/edit`),
+    },
+  ];
+
+  const rentActions = [
+    {
+      action: "Pay",
+      onClick: () => router.push(`/${params.entity}/${id}/checkout`),
+    },
+  ];
 
   return (
     <DropdownMenu>
@@ -36,11 +40,15 @@ export default function RowActions({ id }: { id: string }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuItem
-          onClick={() => router.push(`/${params.entity}/${id}/edit`)}
-        >
-          Edit
-        </DropdownMenuItem>
+        {(params.entity === "rent" ? rentActions : defaultActions).map(
+          (action, index) => (
+            <React.Fragment key={index}>
+              <DropdownMenuItem onClick={action.onClick}>
+                {action.action}
+              </DropdownMenuItem>
+            </React.Fragment>
+          ),
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => router.push(`/${params.entity}/${id}`)}
