@@ -1,8 +1,8 @@
 "use client";
 
-import PropertyForm from "@/app/(private)/[entity]/_forms/property";
-import TenantForm from "@/app/(private)/[entity]/_forms/tenant";
-import UnitForm from "@/app/(private)/[entity]/_forms/unit";
+import PropertyForm from "@/components/entity-forms/property";
+import TenantForm from "@/components/entity-forms/tenant";
+import UnitForm from "@/components/entity-forms/unit";
 import { updateProperty } from "@/util/property";
 import { updateUnit } from "@/util/unit";
 import { updateUser } from "@/util/user";

@@ -1,7 +1,7 @@
 "use client";
-import PropertyForm from "@/app/(private)/[entity]/_forms/property";
-import TenantForm from "@/app/(private)/[entity]/_forms/tenant";
-import UnitForm from "@/app/(private)/[entity]/_forms/unit";
+import PropertyForm from "@/components/entity-forms/property";
+import TenantForm from "@/components/entity-forms/tenant";
+import UnitForm from "@/components/entity-forms/unit";
 import { createProperty } from "@/util/property";
 import { createUser } from "@/util/user";
 import { useParams, useRouter } from "next/navigation";

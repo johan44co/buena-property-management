@@ -1,13 +1,13 @@
 import { EntityTable } from "@/components/entity-table";
-import { propertyColumns } from "./_columns/property";
-import { tenantColumns } from "./_columns/tenant";
-import { unitColumns } from "./_columns/unit";
+import { propertyColumns } from "@/components/entity-columns/property";
+import { tenantColumns } from "@/components/entity-columns/tenant";
+import { unitColumns } from "@/components/entity-columns/unit";
 import { getProperties } from "@/util/property";
 import { getUsers } from "@/util/user";
 import { getUnits, getUnitsRent } from "@/util/unit";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { rentColumns } from "./_columns/rent";
+import { rentColumns } from "@/components/entity-columns/rent";
 
 export const dynamicParams = false;
 
