@@ -2,7 +2,7 @@ import { Unit, RentPayment } from "@prisma/client";
 import { convertLocalToUTC } from "./timezone";
 import { startOfDay } from "date-fns";
 
-interface RentPeriod {
+export interface RentPeriod {
   startDate: Date;
   endDate: Date;
   amount: number;
@@ -16,7 +16,7 @@ interface RentStatus {
   daysLate: number;
 }
 
-interface RentDueResult {
+export interface RentDueResult {
   leaseStart: Date;
   leaseEnd: Date;
   totalDue: number;
@@ -40,7 +40,9 @@ function calculatePeriodAmount(
   isFullMonth: boolean,
   daysInMonth: number,
 ): number {
-  return rentAmount * (isFullMonth ? 1 : daysInPeriod / daysInMonth);
+  return isFullMonth
+    ? rentAmount
+    : Math.ceil(rentAmount * (daysInPeriod / daysInMonth));
 }
 
 function calculateMonthsBetweenDates(startDate: Date, endDate: Date): number {
@@ -64,8 +66,11 @@ export function calculateRentDue(
     (sum, payment) => sum + payment.amountPaid,
     0,
   );
+  const currentPeriodIndex = periods.findIndex((period) => period.current);
   const totalDue =
-    periods.reduce((sum, period) => sum + period.amount, 0) - totalPaid;
+    periods
+      .slice(0, currentPeriodIndex + 1)
+      .reduce((sum, period) => sum + period.amount, 0) - totalPaid;
   const currentPeriod = periods.find((period) => period.current);
   const nextPeriod = periods.find((period) => period.startDate > today);
 

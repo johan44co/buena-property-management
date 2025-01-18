@@ -1,17 +1,8 @@
-import { rentDueCalculation } from "@/util/rent-due";
+import { calculateRentDue } from "@/util/rent-due";
 import { getUnitRent } from "@/util/unit";
-import { format } from "date-fns";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "@/util/currency";
 import { redirect } from "next/navigation";
+import PaymentSchedule from "@/components/payment-schedule";
+import RentPayment from "@/components/rent-payment";
 
 export default async function Page({
   params,
@@ -33,75 +24,18 @@ export default async function Page({
     },
   });
 
-  const { rentDue, totalDue, nextDueDate, paymentStatus, partialMonth } =
-    rentDueCalculation(unit, unit?.rentPayments);
+  if (!unit || !unit.leaseStart || !unit.leaseEnd) {
+    return redirect("/");
+  }
 
-  const needsPayment = totalDue > 0;
+  const rentDue = calculateRentDue(unit, unit.rentPayments);
 
   return (
-    <div className="container mx-auto p-4 pt-0 max-w-2xl">
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col items-start gap-4 md:flex-row-reverse md:items-center md:justify-between">
-            <Badge variant={paymentStatus.current ? "default" : "destructive"}>
-              {paymentStatus.current
-                ? "Current"
-                : `${paymentStatus.daysLate} Days Late`}
-            </Badge>
-            <CardTitle>Rent Payment</CardTitle>
-          </div>
-          <CardDescription>
-            {unit?.property.address} - Unit {unit?.unitNumber}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid gap-4">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Rent Due</span>
-              <span className="font-medium">{formatCurrency(rentDue)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Total Due</span>
-              <span className="font-medium">{formatCurrency(totalDue)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Next Due Date</span>
-              <span className="font-medium">
-                {nextDueDate ? format(nextDueDate, "PPP") : "N/A"}
-              </span>
-            </div>
-            {partialMonth && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Partial Month</span>
-                <span className="font-medium">
-                  {partialMonth.days} days (
-                  {formatCurrency(partialMonth.amount)})
-                </span>
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          {needsPayment ? (
-            <div className="space-y-4">
-              <h3 className="font-semibold">Make a Payment</h3>
-              {/* Payment form placeholder */}
-              <div className="h-48 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center">
-                <span className="text-muted-foreground">
-                  Payment form goes here
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              <Badge variant="default" className="text-lg">
-                No Payment Due
-              </Badge>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+    <div className="container mx-auto flex flex-col lg:flex-row gap-4 p-4 pt-0 max-w-5xl">
+      <div className="lg:w-1/2 flex flex-col gap-4">
+        <RentPayment rentDue={rentDue} unit={unit} />
+      </div>
+      <PaymentSchedule className="lg:w-1/2" periods={rentDue.periods} />
     </div>
   );
 }
