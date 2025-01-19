@@ -9,10 +9,10 @@ export default function PageCheckout() {
   }>();
   const router = useRouter();
   useEffect(() => {
-    router.push(`/${entity}/${id}`);
-    setTimeout(() => {
+    router.replace(`/${entity}/${id}`);
+    return () => {
       router.push(`/${entity}/${id}/checkout`);
-    }, 100);
+    };
   }, [id, entity, router]);
 
   return null;

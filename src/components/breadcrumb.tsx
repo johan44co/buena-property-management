@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getProperty } from "@/util/property";
 import { getUnit, getUnitRent } from "@/util/unit";
 import { getUser } from "@/util/user";
@@ -23,7 +22,6 @@ export default function BreadcrumbComponent() {
   const [breadcrumb, setBreadcrumb] = React.useState<
     { name?: string; href: string }[]
   >([]);
-  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const parts = pathname.split("/").filter(Boolean);
@@ -80,10 +78,9 @@ export default function BreadcrumbComponent() {
       }
 
       setBreadcrumb(breadcrumbItems);
-      setLoading(false);
     };
 
-    generateBreadcrumbItems().catch(() => setLoading(false));
+    generateBreadcrumbItems();
   }, [pathname, params.id, params.entity]);
 
   return (
@@ -93,13 +90,6 @@ export default function BreadcrumbComponent() {
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
-            {loading && (
-              <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <Skeleton className="h-4 w-48" />
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            )}
             {breadcrumb.map(({ name, href }, index) => (
               <React.Fragment key={index}>
                 <BreadcrumbItem>
