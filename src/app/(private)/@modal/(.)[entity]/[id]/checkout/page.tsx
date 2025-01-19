@@ -6,7 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CheckoutProvider } from "@/providers/checkout-provider";
 import { calculateRentDue } from "@/util/rent-due";
 import { getUnitRent } from "@/util/unit";
 
@@ -30,7 +29,7 @@ export default async function Page({
   const rentDue = calculateRentDue(unit, unit.rentPayments);
 
   return (
-    <CheckoutProvider>
+    <>
       <DialogHeader>
         <DialogTitle className="text-2xl">Rent Payment</DialogTitle>
         <DialogDescription>
@@ -41,6 +40,6 @@ export default async function Page({
       <DialogFooter>
         <CheckoutButton amount={rentDue.totalDue} />
       </DialogFooter>
-    </CheckoutProvider>
+    </>
   );
 }

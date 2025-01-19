@@ -4,7 +4,7 @@ import {
   useElements,
   PaymentElement,
 } from "@stripe/react-stripe-js";
-import React, { useState } from "react";
+import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import StripeElements from "./stripe-elements";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -29,8 +29,6 @@ export default function Checkout({
 
 function CheckoutForm() {
   const { state: checkout, dispatch } = useCheckout();
-  const [errorMessage, setErrorMessage] = useState<string | undefined>("");
-
   const stripeElements = useElements();
   const stripeInstance = useStripe();
 
@@ -44,7 +42,13 @@ function CheckoutForm() {
       return;
     }
     dispatch({ type: "SET_LOADING", payload: true });
-    const { clientSecret } = await createPaymentIntent({ id });
+    let clientSecret = checkout.paymentIntent?.clientSecret;
+    if (!checkout.paymentIntent?.clientSecret) {
+      const { clientSecret: newClientSecret } = await createPaymentIntent({
+        id,
+      });
+      clientSecret = newClientSecret;
+    }
     stripeElements.submit();
     const { paymentMethod } = await stripeInstance.createPaymentMethod({
       elements: stripeElements,
@@ -55,7 +59,7 @@ function CheckoutForm() {
     if (clientSecret && paymentMethod) {
       const url = new URL(`/${entity}/${id}/payment`, window.location.origin);
       const { paymentIntent, error } = await stripeInstance.confirmPayment({
-        clientSecret: clientSecret,
+        clientSecret,
         confirmParams: {
           return_url: url.href,
           payment_method: paymentMethod.id,
@@ -64,7 +68,7 @@ function CheckoutForm() {
         redirect: "if_required",
       });
       if (error) {
-        setErrorMessage(error.message);
+        dispatch({ type: "SET_ERROR_MESSAGE", payload: error.message });
       } else {
         url.searchParams.set("payment_intent", paymentIntent.id);
         router.replace(url.pathname + url.search, { scroll: false });
@@ -84,13 +88,12 @@ function CheckoutForm() {
         }}
         onLoaderStart={() => dispatch({ type: "SET_LOADING", payload: true })}
         onReady={() => dispatch({ type: "SET_LOADING", payload: false })}
-        onChange={() => setErrorMessage(undefined)}
       />
-      {errorMessage && (
+      {checkout.errorMessage && (
         <Alert variant="destructive" className="mt-80">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
+          <AlertDescription>{checkout.errorMessage}</AlertDescription>
         </Alert>
       )}
     </form>

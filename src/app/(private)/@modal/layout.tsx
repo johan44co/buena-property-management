@@ -1,5 +1,6 @@
 "use client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { CheckoutProvider } from "@/providers/checkout-provider";
 import { useRouter } from "next/navigation";
 import React from "react";
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -13,7 +14,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <Dialog open={true} onOpenChange={onOpenChange}>
-      <DialogContent>{children}</DialogContent>
+      <CheckoutProvider>
+        <DialogContent>{children}</DialogContent>
+      </CheckoutProvider>
     </Dialog>
   );
 }

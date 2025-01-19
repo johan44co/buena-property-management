@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   DialogClose,
@@ -6,26 +7,41 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useCheckout } from "@/providers/checkout-provider";
 import { retrievePaymentIntent } from "@/util/checkout";
 import Link from "next/link";
+import { useParams, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
-export default async function Page({
-  searchParams,
-  params,
-}: {
-  searchParams: Promise<{
-    payment_intent: string;
-  }>;
-  params: Promise<{
+export default function Page() {
+  const { state: checkout, dispatch } = useCheckout();
+  const searchParams = useSearchParams();
+  const params = useParams<{
     entity: string;
     id: string;
-  }>;
-}) {
-  const { payment_intent } = await searchParams;
-  const { entity, id } = await params;
-  const paymentIntent = await retrievePaymentIntent(payment_intent);
+  }>();
 
-  const status = paymentIntent.paymentIntent?.status;
+  const payment_intent = searchParams.get("payment_intent");
+  const { entity, id } = params;
+
+  useEffect(() => {
+    const fetchPaymentIntent = async () => {
+      const { paymentIntent } = await retrievePaymentIntent(payment_intent);
+      dispatch({ type: "SET_PAYMENT_INTENT", payload: paymentIntent });
+      if (
+        paymentIntent?.status !== "succeeded" &&
+        paymentIntent?.status !== "processing"
+      ) {
+        dispatch({
+          type: "SET_ERROR_MESSAGE",
+          payload: "Payment failed or requires action. Please try again",
+        });
+      }
+    };
+    fetchPaymentIntent();
+  }, [payment_intent]);
+
+  const status = checkout.paymentIntent?.status;
 
   const title =
     status === "succeeded" ? "Payment Successful" : "Payment Failed";
@@ -49,7 +65,7 @@ export default async function Page({
             <Button>{button}</Button>
           </DialogClose>
         ) : (
-          <Link href={href}>
+          <Link href={href} replace={true}>
             <Button>{button}</Button>
           </Link>
         )}
