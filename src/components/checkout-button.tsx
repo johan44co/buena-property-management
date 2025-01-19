@@ -8,7 +8,7 @@ export function CheckoutButton({ amount }: { amount: number }) {
   const { state: checkout } = useCheckout();
   return (
     <Button type="submit" form="checkoutForm" disabled={checkout.loading}>
-      {checkout.loading ? `Pay ${formatCurrency(amount)}` : "Processing..."}
+      {!checkout.loading ? `Pay ${formatCurrency(amount)}` : "Processing..."}
     </Button>
   );
 }

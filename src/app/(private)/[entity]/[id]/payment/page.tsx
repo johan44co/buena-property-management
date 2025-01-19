@@ -1,5 +1,5 @@
 import ModalPageInterceptor from "@/components/modal-page-interceptor";
 
 export default function Page() {
-  return <ModalPageInterceptor modal="checkout" />;
+  return <ModalPageInterceptor modal="payment" />;
 }

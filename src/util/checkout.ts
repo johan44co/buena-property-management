@@ -77,3 +77,25 @@ export async function createPaymentIntent({ id }: { id: string }) {
     return { error: (err as Error).message };
   }
 }
+
+export async function retrievePaymentIntent(paymentIntentId: string | null) {
+  try {
+    if (!paymentIntentId) {
+      return { error: "Payment intent not found" };
+    }
+    const { status, client_secret, id, invoice } =
+      await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    return {
+      paymentIntent: {
+        status,
+        clientSecret: client_secret,
+        invoice: typeof invoice === "string" ? invoice : null,
+        // paymentMethod: payment_method,
+        id,
+      },
+    };
+  } catch (err) {
+    return { error: (err as Error).message };
+  }
+}
