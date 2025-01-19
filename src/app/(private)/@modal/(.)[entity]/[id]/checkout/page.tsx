@@ -1,12 +1,12 @@
 import Checkout from "@/components/checkout";
-import { Button } from "@/components/ui/button";
+import { CheckoutButton } from "@/components/checkout-button";
 import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { formatCurrency } from "@/util/currency";
+import { CheckoutProvider } from "@/providers/checkout-provider";
 import { calculateRentDue } from "@/util/rent-due";
 import { getUnitRent } from "@/util/unit";
 
@@ -27,11 +27,10 @@ export default async function Page({
   if (!unit || !unit.leaseStart || !unit.leaseEnd) {
     return null;
   }
-
   const rentDue = calculateRentDue(unit, unit.rentPayments);
 
   return (
-    <>
+    <CheckoutProvider>
       <DialogHeader>
         <DialogTitle className="text-2xl">Rent Payment</DialogTitle>
         <DialogDescription>
@@ -40,10 +39,8 @@ export default async function Page({
       </DialogHeader>
       <Checkout currency="eur" amount={rentDue.totalDue * 100} />
       <DialogFooter>
-        <Button type="submit" form="checkoutForm">
-          Pay {formatCurrency(rentDue.totalDue)}
-        </Button>
+        <CheckoutButton amount={rentDue.totalDue} />
       </DialogFooter>
-    </>
+    </CheckoutProvider>
   );
 }

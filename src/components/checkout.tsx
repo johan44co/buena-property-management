@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { createPaymentIntent } from "@/util/checkout";
 import { useSession } from "next-auth/react";
+import { useCheckout } from "@/providers/checkout-provider";
 
 export default function Checkout({
   currency = "eur",
@@ -27,7 +28,7 @@ export default function Checkout({
 }
 
 function CheckoutForm() {
-  const [loading, setLoading] = useState(false);
+  const { state: checkout, dispatch } = useCheckout();
   const [errorMessage, setErrorMessage] = useState<string | undefined>("");
 
   const stripeElements = useElements();
@@ -42,7 +43,7 @@ function CheckoutForm() {
     if (!stripeElements || !stripeInstance) {
       return;
     }
-    setLoading(true);
+    dispatch({ type: "SET_LOADING", payload: true });
     const { clientSecret } = await createPaymentIntent({ id });
     stripeElements.submit();
     const { paymentMethod } = await stripeInstance.createPaymentMethod({
@@ -69,7 +70,7 @@ function CheckoutForm() {
         router.replace(url.pathname + url.search, { scroll: false });
       }
     }
-    setLoading(false);
+    dispatch({ type: "SET_LOADING", payload: false });
   };
 
   return (
@@ -79,11 +80,11 @@ function CheckoutForm() {
           layout: {
             type: "tabs",
           },
-          readOnly: loading,
+          readOnly: checkout.loading,
         }}
-        onLoaderStart={() => setLoading(true)}
-        onReady={() => setLoading(false)}
-        onChange={() => setErrorMessage("")}
+        onLoaderStart={() => dispatch({ type: "SET_LOADING", payload: true })}
+        onReady={() => dispatch({ type: "SET_LOADING", payload: false })}
+        onChange={() => setErrorMessage(undefined)}
       />
       {errorMessage && (
         <Alert variant="destructive" className="mt-80">
