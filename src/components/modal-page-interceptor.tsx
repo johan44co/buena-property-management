@@ -17,7 +17,7 @@ export default function ModalPageInterceptor({ modal }: { modal: string }) {
         `/${entity}/${id}/${modal}${searchParams.size ? `?${searchParams.toString()}` : ""}`,
       );
     };
-  }, [id, entity, router, modal]);
+  }, [id, entity, router, modal, searchParams]);
 
   return null;
 }

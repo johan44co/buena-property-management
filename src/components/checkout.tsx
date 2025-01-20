@@ -9,9 +9,13 @@ import { useParams, useRouter } from "next/navigation";
 import StripeElements from "./stripe-elements";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { createPaymentIntent } from "@/util/checkout";
 import { useSession } from "next-auth/react";
-import { useCheckout } from "@/providers/checkout-provider";
+import {
+  createPaymentIntentAction,
+  createPaymentMethodAction,
+  confirmPaymentAction,
+  useCheckout,
+} from "@/providers/checkout-provider";
 
 export default function Checkout({
   currency = "eur",
@@ -42,39 +46,31 @@ function CheckoutForm() {
       return;
     }
     dispatch({ type: "SET_LOADING", payload: true });
-    let clientSecret = checkout.paymentIntent?.clientSecret;
-    if (!checkout.paymentIntent?.clientSecret) {
-      const { clientSecret: newClientSecret } = await createPaymentIntent({
-        id,
+    dispatch(createPaymentIntentAction(id))
+      .then(async (clientSecret) => {
+        const paymentMethod = await dispatch(
+          createPaymentMethodAction(
+            stripeInstance,
+            stripeElements,
+            session?.user?.email,
+          ),
+        );
+        return { clientSecret, paymentMethod };
+      })
+      .then(({ clientSecret, paymentMethod }) => {
+        return dispatch(
+          confirmPaymentAction(
+            stripeInstance,
+            router,
+            clientSecret,
+            paymentMethod,
+            new URL(`/${entity}/${id}/payment`, window.location.origin),
+          ),
+        );
+      })
+      .finally(() => {
+        dispatch({ type: "SET_LOADING", payload: false });
       });
-      clientSecret = newClientSecret;
-    }
-    stripeElements.submit();
-    const { paymentMethod } = await stripeInstance.createPaymentMethod({
-      elements: stripeElements,
-      params: {
-        billing_details: { email: session?.user?.email },
-      },
-    });
-    if (clientSecret && paymentMethod) {
-      const url = new URL(`/${entity}/${id}/payment`, window.location.origin);
-      const { paymentIntent, error } = await stripeInstance.confirmPayment({
-        clientSecret,
-        confirmParams: {
-          return_url: url.href,
-          payment_method: paymentMethod.id,
-          save_payment_method: true,
-        },
-        redirect: "if_required",
-      });
-      if (error) {
-        dispatch({ type: "SET_ERROR_MESSAGE", payload: error.message });
-      } else {
-        url.searchParams.set("payment_intent", paymentIntent.id);
-        router.replace(url.pathname + url.search, { scroll: false });
-      }
-    }
-    dispatch({ type: "SET_LOADING", payload: false });
   };
 
   return (

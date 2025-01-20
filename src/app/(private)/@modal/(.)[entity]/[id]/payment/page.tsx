@@ -7,15 +7,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useCheckout } from "@/providers/checkout-provider";
-import { retrievePaymentIntent } from "@/util/checkout";
+import {
+  retrievePaymentIntentAction,
+  useCheckout,
+} from "@/providers/checkout-provider";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 export default function Page() {
   const { state: checkout, dispatch } = useCheckout();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const params = useParams<{
     entity: string;
     id: string;
@@ -25,33 +28,35 @@ export default function Page() {
   const { entity, id } = params;
 
   useEffect(() => {
-    const fetchPaymentIntent = async () => {
-      const { paymentIntent } = await retrievePaymentIntent(payment_intent);
-      dispatch({ type: "SET_PAYMENT_INTENT", payload: paymentIntent });
-      if (
-        paymentIntent?.status !== "succeeded" &&
-        paymentIntent?.status !== "processing"
-      ) {
-        dispatch({
-          type: "SET_ERROR_MESSAGE",
-          payload: "Payment failed or requires action. Please try again",
-        });
-      }
-    };
-    fetchPaymentIntent();
+    dispatch(retrievePaymentIntentAction(payment_intent));
   }, [payment_intent]);
 
-  const status = checkout.paymentIntent?.status;
+  if (!payment_intent) {
+    router.back();
+  }
 
-  const title =
-    status === "succeeded" ? "Payment Successful" : "Payment Failed";
-  const description =
-    status === "succeeded"
-      ? "Your payment was successful"
-      : "Your payment failed. Please try again";
-  const button = status === "succeeded" ? "Go Back" : "Try Again";
-  const href =
-    status === "succeeded" ? `/${entity}/${id}` : `/${entity}/${id}/checkout`;
+  const status = checkout.paymentIntent?.status;
+  const paymentConfig = {
+    succeeded: {
+      title: "Payment Successful",
+      description: "Your payment was successful",
+      button: "Go Back",
+      href: `/${entity}/${id}`,
+    },
+    failed: {
+      title: "Payment Failed",
+      description: "Your payment failed. Please try again",
+      button: "Try Again",
+      href: `/${entity}/${id}/checkout`,
+    },
+  };
+
+  const { title, description, button, href } =
+    paymentConfig[status === "succeeded" ? "succeeded" : "failed"];
+
+  if (!status) {
+    return null;
+  }
 
   return (
     <>
