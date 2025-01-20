@@ -3,6 +3,8 @@ import Stripe from "stripe";
 import { headers } from "next/headers";
 import { createRentPayment } from "@/util/rent-payment";
 
+export const revalidate = 0;
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -40,7 +42,17 @@ export async function POST(req: Request) {
         break;
     }
 
-    return NextResponse.json({ received: true, response }, { status: 200 });
+    return NextResponse.json(
+      { received: true, response },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      },
+    );
   } catch (err) {
     console.error("Webhook error:", err);
     return NextResponse.json(
