@@ -14,16 +14,31 @@ import { Badge } from "./ui/badge";
 import { format } from "date-fns";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useCheckout } from "@/providers/checkout-provider";
 
 export default function RentPayment({
-  rentDue: { totalDue, nextDueDate, rentStatus, periods },
+  rentDue,
   unit,
 }: {
   rentDue: RentDueResult;
   unit: Unit & { property: { address: string } };
 }) {
+  const [rentDueState, setRentDueState] = useState<RentDueResult>(rentDue);
+  const { totalDue, nextDueDate, rentStatus, periods } = rentDueState;
   const currentPeriod = periods.find((period) => period.current);
   const router = useRouter();
+  const { state: checkout } = useCheckout();
+
+  useEffect(() => {
+    if (checkout.paymentIntent?.status === "succeeded") {
+      setRentDueState((rentDueState) => ({
+        ...rentDueState,
+        totalDue: 0,
+        rentStatus: { pending: false, daysLate: 0 },
+      }));
+    }
+  }, [checkout.paymentIntent?.status]);
 
   return (
     <Card>
@@ -32,7 +47,7 @@ export default function RentPayment({
           <Badge variant={rentStatus.pending ? "destructive" : "default"}>
             {rentStatus.pending
               ? `${rentStatus.daysLate} Days Late`
-              : "Current"}
+              : "All settled"}
           </Badge>
           <CardTitle>Rent Payment</CardTitle>
         </div>
@@ -72,8 +87,9 @@ export default function RentPayment({
           size="lg"
           className="w-full text-md"
           onClick={() => router.push(`/rent/${unit.id}/checkout`)}
+          disabled={checkout.loading || rentStatus.pending === false}
         >
-          Checkout
+          {rentStatus.pending ? `Checkout` : `Fully Paid`}
         </Button>
       </CardContent>
     </Card>
