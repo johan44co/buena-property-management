@@ -24,19 +24,21 @@ export async function POST(req: Request) {
     switch (event.type) {
       case "invoice.payment_succeeded":
         const invoice = event.data.object as Stripe.Invoice;
-        invoice.lines.data.forEach(async (line) => {
-          const amount = line.amount / 100;
-          const metadata = line.metadata;
-          const rentPayment = await createRentPayment({
-            unitId: metadata.unitId,
-            tenantId: metadata.tenantId,
-            amountPaid: amount,
-            status: "paid",
-            dueDate: new Date(metadata.dueDate),
-          });
-          response = rentPayment;
-          console.warn("Rent payment created:", rentPayment);
-        });
+        await Promise.all(
+          invoice.lines.data.map(async (line) => {
+            const amount = line.amount / 100;
+            const metadata = line.metadata;
+            const rentPayment = await createRentPayment({
+              unitId: metadata.unitId,
+              tenantId: metadata.tenantId,
+              amountPaid: amount,
+              status: "paid",
+              dueDate: new Date(metadata.dueDate),
+            });
+            response = rentPayment;
+            console.warn("Rent payment created:", rentPayment);
+          }),
+        );
         break;
       default:
         break;
