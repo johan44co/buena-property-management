@@ -23,9 +23,6 @@ export async function POST(req: Request) {
         invoice.lines.data.forEach(async (line) => {
           const amount = line.amount / 100;
           const metadata = line.metadata;
-          if (!metadata.unitId || !metadata.tenantId || !metadata.dueDate) {
-            return;
-          }
           await createRentPayment({
             unitId: metadata.unitId,
             tenantId: metadata.tenantId,
