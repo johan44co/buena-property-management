@@ -23,13 +23,14 @@ export async function POST(req: Request) {
         invoice.lines.data.forEach(async (line) => {
           const amount = line.amount / 100;
           const metadata = line.metadata;
-          await createRentPayment({
+          const rentPayment = await createRentPayment({
             unitId: metadata.unitId,
             tenantId: metadata.tenantId,
             amountPaid: amount,
             status: "paid",
             dueDate: new Date(metadata.dueDate),
           });
+          console.log("Rent payment created:", rentPayment);
         });
         break;
       default:
