@@ -53,6 +53,7 @@ export async function createPaymentIntent({ id }: { id: string }) {
         propertyId: unit.propertyId,
         ownerId: unit.property.ownerId,
         tenantId: unit.tenantId,
+        dueDate: rentDue.dueDate?.toISOString() || null,
       },
       description: `Rent payment for unit ${unit.property.address} - ${unit.unitNumber}`,
     });
