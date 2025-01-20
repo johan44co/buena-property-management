@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import Breadcrumb from "@/components/breadcrumb";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getSession } from "@/lib/auth";
+import { CheckoutProvider } from "@/providers/checkout-provider";
 import { redirect } from "next/navigation";
 
 export default async function Layout({
@@ -21,9 +22,11 @@ export default async function Layout({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        {modal}
-        <Breadcrumb />
-        {children}
+        <CheckoutProvider>
+          {modal}
+          <Breadcrumb />
+          {children}
+        </CheckoutProvider>
       </SidebarInset>
     </SidebarProvider>
   );
