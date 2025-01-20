@@ -17,6 +17,8 @@ export async function POST(req: Request) {
       webhookSecret,
     );
 
+    let response;
+
     switch (event.type) {
       case "invoice.payment_succeeded":
         const invoice = event.data.object as Stripe.Invoice;
@@ -30,14 +32,15 @@ export async function POST(req: Request) {
             status: "paid",
             dueDate: new Date(metadata.dueDate),
           });
-          console.log("Rent payment created:", rentPayment);
+          response = rentPayment;
+          console.warn("Rent payment created:", rentPayment);
         });
         break;
       default:
         break;
     }
 
-    return NextResponse.json({ received: true }, { status: 200 });
+    return NextResponse.json({ received: true, response }, { status: 200 });
   } catch (err) {
     console.error("Webhook error:", err);
     return NextResponse.json(
